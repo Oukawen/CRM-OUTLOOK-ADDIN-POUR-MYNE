@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRM Myne</title>
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <style>
+    /* ── RESET & BASE ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg2: #f6f7f9;
+      --bg3: #eef0f4;
+      --text: #111827;
+      --text2: #6b7280;
+      --text3: #9ca3af;
+      --border: rgba(0,0,0,0.10);
+      --border2: rgba(0,0,0,0.18);
+      --green: #3b6d11;
+      --green-bg: #EAF3DE;
+      --green-light: #C0DD97;
+      --blue: #185FA5;
+      --blue-bg: #E6F1FB;
+      --amber: #854F0B;
+      --amber-bg: #FAEEDA;
+      --amber-border: #EF9F27;
+      --red: #A32D2D;
+      --red-bg: #FCEBEB;
+      --red-border: #F09595;
+      --purple-bg: #EEEDFE;
+      --purple: #3C3489;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--text);
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* ── NAVIGATION ───────────────────────────────────────── */
+    .nav {
+      display: flex;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+    .nav-item {
+      flex: 1;
+      padding: 7px 2px 5px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      border-top: 2px solid transparent;
+      font-size: 9px;
+      color: var(--text3);
+      cursor: pointer;
+      background: none;
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+    }
+    .nav-item:hover { color: var(--text2); }
+    .nav-item.active { border-top-color: var(--green); color: var(--green); }
+    .nav-item svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ── ÉCRANS ───────────────────────────────────────────── */
+    .screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+    .screen.active { display: flex; }
+
+    .screen-header {
+      padding: 10px 12px 8px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .screen-header h1 { font-size: 14px; font-weight: 600; }
+    .screen-header p { font-size: 10px; color: var(--text2); margin-top: 1px; }
+
+    .screen-body { flex: 1; overflow-y: auto; padding: 10px 12px; }
+
+    /* ── CARTES STATS ─────────────────────────────────────── */
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+    .stat-card { background: var(--bg2); border-radius: var(--radius); padding: 8px 10px; }
+    .stat-card .lbl { font-size: 9px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-card .val { font-size: 20px; font-weight: 600; color: var(--text); }
+
+    /* ── SECTIONS ─────────────────────────────────────────── */
+    .section-label { font-size: 10px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; margin-top: 10px; }
+    .section-label:first-child { margin-top: 0; }
+
+    /* ── ITEMS LISTE ──────────────────────────────────────── */
+    .list-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 5px;
+      background: var(--bg);
+      cursor: pointer;
+    }
+    .list-item:hover { background: var(--bg2); }
+    .list-item.selected { background: var(--blue-bg); border-color: #85B7EB; }
+
+    .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .dot-green { background: var(--green); }
+    .dot-amber { background: var(--amber); }
+
+    .item-info { flex: 1; min-width: 0; }
+    .item-title { font-size: 11px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-sub { font-size: 9px; color: var(--text2); margin-top: 1px; }
+    .item-date { font-size: 9px; color: var(--text2); white-space: nowrap; flex-shrink: 0; }
+
+    /* ── BADGES ───────────────────────────────────────────── */
+    .badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+    .badge-tva-m { background: #FAECE7; color: #993C1D; }
+    .badge-tva-a { background: var(--green-bg); color: var(--green); }
+    .badge-tva-t { background: var(--amber-bg); color: var(--amber); }
+    .badge-tva-na { background: var(--bg3); color: var(--text2); }
+    .badge-fm { background: var(--purple-bg); color: var(--purple); }
+    .badge-s { background: var(--blue-bg); color: var(--blue); }
+    .badge-l { background: #FBEAF0; color: #993556; font-size: 9px; }
+
+    /* ── BOUTONS ──────────────────────────────────────────── */
+    .btn {
+      padding: 6px 12px;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font);
+    }
+    .btn:hover { background: var(--bg2); }
+    .btn-primary { background: var(--green); color: #fff; border-color: transparent; }
+    .btn-primary:hover { background: #2d5509; }
+    .btn-blue { background: var(--blue); color: #fff; border-color: transparent; }
+    .btn-blue:hover { background: #0c447c; }
+    .btn-danger { background: var(--red); color: #fff; border-color: transparent; }
+    .btn-danger:hover { background: #791f1f; }
+    .btn-amber { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-border); }
+    .btn-full { width: 100%; justify-content: center; }
+    .btn-sm { padding: 3px 8px; font-size: 11px; }
+    .btn-launch { width: 100%; margin-top: 10px; padding: 9px; background: var(--green); color: #fff; border: none; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: var(--font); }
+    .btn-launch:hover { background: #2d5509; }
+    .btn-row { display: flex; gap: 6px; margin-top: 8px; }
+
+    /* ── FORMULAIRES ──────────────────────────────────────── */
+    .field { margin-bottom: 8px; }
+    .field label { display: block; font-size: 10px; color: var(--text2); margin-bottom: 3px; }
+    .field input, .field select, .field textarea {
+      width: 100%;
+      padding: 6px 9px;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      font-size: 12px;
+      color: var(--text);
+      background: var(--bg);
+      font-family: var(--font);
+    }
+    .field textarea { min-height: 80px; resize: vertical; }
+    .field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--green); }
+
+    /* ── RECHERCHE ────────────────────────────────────────── */
+    .search-bar { display: flex; gap: 5px; margin-bottom: 8px; }
+    .search-bar input { flex: 1; padding: 6px 9px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 12px; font-family: var(--font); }
+    .search-bar select { padding: 6px 8px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 11px; font-family: var(--font); background: var(--bg); }
+
+    /* ── AVATARS ──────────────────────────────────────────── */
+    .avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--blue-bg); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: var(--blue); flex-shrink: 0; }
+    .avatar-green { background: var(--green-bg); color: var(--green); }
+    .avatar-purple { background: var(--purple-bg); color: var(--purple); }
+
+    /* ── STEPPER ──────────────────────────────────────────── */
+    .step-bar { display: flex; align-items: center; margin-bottom: 14px; }
+    .step-num { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+    .step-num.done { background: var(--green); color: #fff; }
+    .step-num.active { background: var(--blue); color: #fff; }
+    .step-num.idle { background: var(--bg3); color: var(--text2); }
+    .step-line { flex: 1; height: 1px; background: var(--border); margin: 0 4px; }
+
+    /* ── INFOS BOXES ──────────────────────────────────────── */
+    .info-box { border-radius: var(--radius); padding: 9px 10px; margin-bottom: 8px; font-size: 11px; }
+    .info-box-green { background: var(--green-bg); border: 1px solid var(--green-light); color: var(--green); }
+    .info-box-amber { background: var(--amber-bg); border: 1px solid var(--amber-border); color: var(--amber); }
+    .info-box-blue { background: var(--blue-bg); border: 1px solid #85B7EB; color: var(--blue); }
+    .info-box-red { background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red); }
+    .info-box .title { font-weight: 600; margin-bottom: 4px; }
+    .info-box .row { display: flex; justify-content: space-between; margin-bottom: 2px; }
+
+    /* ── PROGRESS ─────────────────────────────────────────── */
+    .progress-wrap { background: var(--bg2); border-radius: var(--radius); padding: 10px; margin-bottom: 8px; }
+    .progress-title { font-size: 12px; font-weight: 600; margin-bottom: 5px; }
+    .progress-bar-bg { background: var(--bg3); border-radius: 4px; height: 6px; margin-bottom: 5px; }
+    .progress-bar-fill { background: var(--green); border-radius: 4px; height: 6px; width: 0%; transition: width 0.4s; }
+    .progress-sub { font-size: 10px; color: var(--text2); }
+
+    /* ── MODE ÉDITION ─────────────────────────────────────── */
+    .edit-mode .screen-header { background: var(--amber-bg); border-bottom-color: var(--amber-border); }
+    .edit-mode .screen-body { background: var(--amber-bg); }
+    .edit-mode .nav { background: var(--amber-bg); border-top-color: var(--amber-border); }
+    .edit-mode .list-item { border-color: var(--amber-border); }
+    .edit-badge { background: var(--amber-border); color: #412402; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+
+    /* ── CC CHIPS ─────────────────────────────────────────── */
+    .cc-row { display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
+    .cc-chip { font-size: 9px; padding: 2px 7px; border-radius: 10px; background: var(--blue-bg); color: var(--blue); cursor: pointer; display: flex; align-items: center; gap: 3px; }
+    .cc-chip.add { background: var(--bg3); color: var(--text2); border: 1px dashed var(--border2); }
+    .cc-chip.remove { background: var(--red-bg); color: var(--red); }
+
+    /* ── MODAL ────────────────────────────────────────────── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: flex-start; justify-content: center; padding: 20px 10px; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: var(--bg); border-radius: var(--radius-lg); border: 1px solid var(--border2); padding: 14px; width: 100%; max-width: 320px; max-height: 85vh; overflow-y: auto; }
+    .modal h2 { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+    .modal-footer { display: flex; gap: 6px; justify-content: flex-end; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+
+    /* ── CHECKBOX GROUP ───────────────────────────────────── */
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 5px; }
+    .check-label { display: flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 8px; border: 1px solid var(--border2); border-radius: 20px; cursor: pointer; }
+    .check-label input { width: auto; }
+    .check-label.checked { background: var(--blue-bg); border-color: #85B7EB; color: var(--blue); }
+
+    /* ── TOAST ────────────────────────────────────────────── */
+    #toast { position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%); background: var(--green-bg); color: var(--green); border: 1px solid var(--green-light); border-radius: var(--radius); padding: 7px 14px; font-size: 12px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200; white-space: nowrap; }
+    #toast.show { opacity: 1; }
+
+    /* ── SEND STATUS ──────────────────────────────────────── */
+    .send-item { display: flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 4px; background: var(--bg); }
+    .send-item.sending { border-color: #85B7EB; }
+    .send-item.sent { opacity: 0.6; }
+    .send-status { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .send-status.s-sent { background: var(--green-bg); color: var(--green); }
+    .send-status.s-sending { background: var(--blue-bg); color: var(--blue); }
+    .send-status.s-pending { background: var(--bg3); color: var(--text3); }
+    .send-status.s-error { background: var(--red-bg); color: var(--red); }
+
+    /* ── SYNTH ITEM ───────────────────────────────────────── */
+    .synth-item { padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 5px; background: var(--bg); }
+    .synth-top { display: flex; align-items: center; gap: 7px; }
+    .synth-top input[type=checkbox] { flex-shrink: 0; }
+    .synth-info { flex: 1; min-width: 0; }
+    .synth-info .ent { font-size: 12px; font-weight: 600; }
+    .synth-info .dest { font-size: 9px; color: var(--text2); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .hidden { display: none !important; }
+    .flex { display: flex; }
+    .gap-6 { gap: 6px; }
+    .mt-8 { margin-top: 8px; }
+    .mt-10 { margin-top: 10px; }
+    .full { width: 100%; }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- ÉCRAN 1 — TABLEAU DE BORD                                  -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen active">
+  <div class="screen-header">
+    <div>
+      <h1>Tableau de bord</h1>
+      <p id="dash-date"></p>
+    </div>
+    <div id="mode-test-badge" class="badge" style="background:var(--amber-bg);color:var(--amber);font-size:10px;">TEST</div>
+  </div>
+  <div class="screen-body">
+    <div class="stats-row">
+      <div class="stat-card"><div class="lbl">Aujourd'hui</div><div class="val" id="stat-today">0</div></div>
+      <div class="stat-card"><div class="lbl">Cette semaine</div><div class="val" id="stat-week">0</div></div>
+    </div>
+
+    <!-- ÉTAPES D'ENVOI (cachées par défaut) -->
+    <div id="process-steps" class="hidden">
+
+      <!-- Étape 1 -->
+      <div id="step1" class="">
+        <div class="step-bar">
+          <div class="step-num active" id="sn1">1</div>
+          <div class="step-line"></div>
+          <div class="step-num idle" id="sn2">2</div>
+          <div class="step-line"></div>
+          <div class="step-num idle" id="sn3">3</div>
+        </div>
+        <p class="section-label">Catégorie de clients</p>
+        <div class="field">
+          <select id="select-category" class="full" style="padding:7px 9px;border:1px solid var(--border2);border-radius:var(--radius);font-size:12px;font-family:var(--font);background:var(--bg);">
+            <option value="">— Choisir une catégorie —</option>
+          </select>
+        </div>
+        <p class="section-label mt-8">Modèle de mail</p>
+        <div class="field">
+          <select id="select-template" class="full" style="padding:7px 9px;border:1px solid var(--border2);border-radius:var(--radius);font-size:12px;font-family:var(--font);background:var(--bg);">
+            <option value="">— Choisir un modèle —</option>
+          </select>
+        </div>
+        <div id="template-preview" class="info-box info-box-blue hidden">
+          <div class="title" id="preview-objet"></div>
+          <div id="preview-corps" style="font-size:10px;margin-top:4px;white-space:pre-line;max-height:80px;overflow:hidden;"></div>
+        </div>
+        <div class="btn-row mt-8">
+          <button class="btn full" onclick="cancelProcess()">Annuler</button>
+          <button class="btn btn-blue full" onclick="goStep2()">Suivant →</button>
+        </div>
+      </div>
+
+      <!-- Étape 2 -->
+      <div id="step2" class="hidden">
+        <div class="step-bar">
+          <div class="step-num done">✓</div>
+          <div class="step-line"></div>
+          <div class="step-num active">2</div>
+          <div class="step-line"></div>
+          <div class="step-num idle">3</div>
+        </div>
+        <p class="section-label">Sélection des entreprises</p>
+        <div style="display:flex;gap:5px;margin-bottom:6px;">
+          <button class="btn btn-sm" onclick="selectAllSynth()">Tout</button>
+          <button class="btn btn-sm" onclick="deselectAllSynth()">Aucun</button>
+          <span style="font-size:10px;color:var(--text2);line-height:26px;margin-left:auto;" id="synth-count"></span>
+        </div>
+        <div id="synth-list"></div>
+        <div class="btn-row mt-8">
+          <button class="btn full" onclick="goStep1()">← Retour</button>
+          <button class="btn btn-blue full" onclick="goStep3()">Confirmer →</button>
+        </div>
+      </div>
+
+      <!-- Étape 3 -->
+      <div id="step3" class="hidden">
+        <div class="step-bar">
+          <div class="step-num done">✓</div>
+          <div class="step-line"></div>
+          <div class="step-num done">✓</div>
+          <div class="step-line"></div>
+          <div class="step-num active">3</div>
+        </div>
+        <div class="info-box info-box-green" id="recap-box">
+          <div class="title">Récapitulatif</div>
+          <div class="row"><span>Modèle</span><span id="recap-template" style="font-weight:600;"></span></div>
+          <div class="row"><span>Entreprises</span><span id="recap-entreprises" style="font-weight:600;"></span></div>
+          <div class="row"><span>Intervalle</span><span style="font-weight:600;">10 sec / mail</span></div>
+          <div class="row"><span>CCI</span><span id="recap-cci" style="font-weight:600;"></span></div>
+        </div>
+        <div id="mode-test-info" class="info-box info-box-amber">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span>⚠</span>
+            <span style="flex:1;">Mode test — mails envoyés uniquement à toi</span>
+            <span class="badge" style="background:var(--amber-border);color:#412402;">TEST</span>
+          </div>
+        </div>
+        <div class="btn-row mt-8">
+          <button class="btn full" onclick="goStep2()">← Retour</button>
+          <button class="btn btn-danger full" id="btn-send-confirm" onclick="confirmAndSend()">
+            ✈ Envoyer
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- LISTE ÉCHÉANCES (visible par défaut) -->
+    <div id="echeances-view">
+      <p class="section-label">Échéances du jour</p>
+      <div id="today-list"></div>
+      <p class="section-label mt-8">À venir (7 jours)</p>
+      <div id="upcoming-list"></div>
+      <button class="btn-launch" onclick="startProcess()">
+        <svg viewBox="0 0 24 24" width="16" height="16"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Lancer l'envoi
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- ÉCRAN 2 — ENVOI EN COURS                                   -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="screen-send" class="screen">
+  <div class="screen-header">
+    <div>
+      <h1>Envoi en cours</h1>
+      <p id="send-subtitle">Initialisation...</p>
+    </div>
+  </div>
+  <div class="screen-body">
+    <div class="progress-wrap">
+      <div class="progress-title" id="send-progress-title">Préparation...</div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="send-progress-bar"></div></div>
+      <div class="progress-sub" id="send-progress-sub"></div>
+    </div>
+    <div id="send-list"></div>
+    <button class="btn btn-danger full mt-8" id="btn-cancel-send" onclick="cancelSendProcess()">
+      Annuler l'envoi
+    </button>
+    <div id="send-done" class="info-box info-box-green hidden mt-8">
+      <div class="title">✓ Envoi terminé</div>
+      <div id="send-done-details" style="font-size:11px;margin-top:4px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- ÉCRAN 3 — CONTACTS                                         -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="screen-contacts" class="screen">
+  <div class="screen-header">
+    <div>
+      <h1>Contacts</h1>
+      <p id="contacts-subtitle"></p>
+    </div>
+    <button class="btn btn-sm" id="btn-edit-contacts" onclick="toggleEditMode()">Éditer</button>
+  </div>
+  <div class="screen-body">
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Nom, entreprise, téléphone..." oninput="renderContacts()" />
+      <select id="filter-tva" onchange="renderContacts()">
+        <option value="">TVA</option>
+        <option>TVA A</option>
+        <option>TVA M</option>
+        <option>TVA T</option>
+        <option>TVA N/A</option>
+      </select>
+      <select id="filter-fm" onchange="renderContacts()">
+        <option value="">FM</option>
+        <option>FM SAS</option>
+        <option>FM SARL</option>
+        <option>FM EI</option>
+        <option>FM SCI</option>
+        <option>FM LMNP</option>
+      </select>
+    </div>
+    <div id="contacts-list"></div>
+    <button id="btn-add-contact" class="btn btn-primary full mt-8 hidden" onclick="openAddContact()">
+      + Nouveau contact
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- ÉCRAN 4 — CONFIGURATION                                    -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="screen-config" class="screen">
+  <div class="screen-header">
+    <div>
+      <h1>Configuration</h1>
+      <p>Planning · Modèles · Collègues</p>
+    </div>
+  </div>
+  <div class="screen-body">
+
+    <!-- Mon email + mode test -->
+    <p class="section-label">Paramètres généraux</p>
+    <div class="field">
+      <label>Mon adresse email (CCI automatique)</label>
+      <input type="email" id="input-mon-email" placeholder="mon@adresse.fr" onchange="saveSettingsUI()" />
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer;">
+        <input type="checkbox" id="toggle-mode-test" onchange="saveSettingsUI()" />
+        Mode test (mails envoyés uniquement à moi)
+      </label>
+    </div>
+
+    <!-- Planning -->
+    <p class="section-label">Planning</p>
+    <div id="planning-list"></div>
+
+    <!-- Modèles -->
+    <p class="section-label mt-8">Modèles de mails</p>
+    <div id="templates-list"></div>
+
+    <!-- Collègues -->
+    <p class="section-label mt-8">Collègues (Cc)</p>
+    <div id="collegues-list"></div>
+    <p style="font-size:10px;color:var(--text2);margin-top:4px;">Ces adresses sont disponibles à l'étape 2 pour ajouter des collègues en Cc sur chaque entreprise.</p>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- NAVIGATION                                                  -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<nav class="nav" id="main-nav">
+  <button class="nav-item active" onclick="showScreen('dashboard')" id="nav-dashboard">
+    <svg viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    Tableau de bord
+  </button>
+  <button class="nav-item" onclick="showScreen('send')" id="nav-send">
+    <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+    Envoi
+  </button>
+  <button class="nav-item" onclick="showScreen('contacts')" id="nav-contacts">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Contacts
+  </button>
+  <button class="nav-item" onclick="showScreen('config')" id="nav-config">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Configuration
+  </button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- MODALES                                                     -->
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<!-- Modale contact -->
+<div class="modal-overlay" id="modal-contact">
+  <div class="modal">
+    <h2 id="modal-contact-title">Modifier le contact</h2>
+    <div class="field"><label>Dossier (entreprise)</label><input type="text" id="mc-dossier" /></div>
+    <div class="field"><label>Nom</label><input type="text" id="mc-nom" /></div>
+    <div class="field"><label>Prénom</label><input type="text" id="mc-prenom" /></div>
+    <div class="field"><label>Email</label><input type="email" id="mc-mail" /></div>
+    <div class="field"><label>Téléphone</label><input type="text" id="mc-tel" /></div>
+    <div class="field"><label>Statut (cat. 1)</label>
+      <select id="mc-statut"><option>Client</option><option>Prospect</option><option>Ancien client</option></select>
+    </div>
+    <div class="field"><label>Forme juridique (cat. 2)</label>
+      <select id="mc-fm"><option>FM SAS</option><option>FM SARL</option><option>FM EI</option><option>FM SCI</option><option>FM LMNP</option></select>
+    </div>
+    <div class="field"><label>Régime TVA (cat. 3)</label>
+      <select id="mc-tva"><option>TVA A</option><option>TVA M</option><option>TVA T</option><option>TVA N/A</option></select>
+    </div>
+    <div class="field"><label>Mode de langage (cat. 4)</label>
+      <select id="mc-l">
+        <option>L SEUL - TUTOYER</option><option>L SEUL - VOUVOYER</option>
+        <option>L GROUPE - TUTOYER</option><option>L GROUPE - VOUVOYER</option>
+      </select>
+    </div>
+    <div class="field"><label>Spécificités (cat. 5 — optionnel)</label>
+      <div class="checkbox-group" id="mc-specs">
+        <label class="check-label"><input type="checkbox" value="S C/C" /> S C/C</label>
+        <label class="check-label"><input type="checkbox" value="S Véhicule" /> S Véhicule</label>
+        <label class="check-label"><input type="checkbox" value="S Stock" /> S Stock</label>
+        <label class="check-label"><input type="checkbox" value="S Caisse" /> S Caisse</label>
+        <label class="check-label"><input type="checkbox" value="S esp" /> S esp</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-contact')">Annuler</button>
+      <button class="btn btn-danger btn-sm" id="btn-delete-contact" onclick="deleteContact()">Supprimer</button>
+      <button class="btn btn-primary" onclick="saveContact()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modale préférences destinataires -->
+<div class="modal-overlay" id="modal-pref">
+  <div class="modal">
+    <h2 id="modal-pref-title">Préférences destinataires</h2>
+    <p style="font-size:11px;color:var(--text2);margin-bottom:10px;" id="modal-pref-dossier"></p>
+    <div class="field"><label>Contacts en À</label><div id="pref-a-list"></div></div>
+    <div class="field"><label>Contacts en Cc</label><div id="pref-cc-list"></div></div>
+    <div class="field"><label>Collègues en Cc</label><div id="pref-collegues-list"></div></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-pref')">Annuler</button>
+      <button class="btn btn-primary" onclick="savePreferencesUI()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modale modèle de mail -->
+<div class="modal-overlay" id="modal-template">
+  <div class="modal">
+    <h2 id="modal-template-title">Modifier le modèle</h2>
+    <div class="field"><label>Nom du modèle</label><input type="text" id="mt-nom" /></div>
+    <div class="field"><label>Objet (utiliser [ENTREPRISE] comme variable)</label><input type="text" id="mt-objet" /></div>
+    <div class="field"><label>Corps du mail (tutoiement singulier — base)</label><textarea id="mt-corps" rows="10"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-template')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveTemplateUI()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modale planning -->
+<div class="modal-overlay" id="modal-planning">
+  <div class="modal">
+    <h2>Modifier l'échéance</h2>
+    <div class="field"><label>Date / récurrence</label><input type="text" id="mp-date" /></div>
+    <div class="field"><label>Description de l'action</label><input type="text" id="mp-action" /></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-planning')">Annuler</button>
+      <button class="btn btn-primary" onclick="savePlanningUI()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- SCRIPTS -->
+<script src="data.js"></script>
+<script src="mail.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
