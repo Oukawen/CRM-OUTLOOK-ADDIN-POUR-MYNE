@@ -11,11 +11,11 @@
   <DefaultLocale>fr-FR</DefaultLocale>
   <DisplayName DefaultValue="CRM Myne"/>
   <Description DefaultValue="Mini CRM - Gestion envoi mails clients"/>
-  <IconUrl DefaultValue="https://YOUR-GITHUB-PAGES-URL/assets/icon-64.png"/>
-  <HighResolutionIconUrl DefaultValue="https://YOUR-GITHUB-PAGES-URL/assets/icon-128.png"/>
-  <SupportUrl DefaultValue="https://YOUR-GITHUB-PAGES-URL"/>
+  <IconUrl DefaultValue="https://oukawen.github.io/CRM-OUTLOOK-ADDIN-POUR-MYNE/assets/icon-64.png"/>
+  <HighResolutionIconUrl DefaultValue="https://oukawen.github.io/CRM-OUTLOOK-ADDIN-POUR-MYNE/assets/icon-128.png"/>
+  <SupportUrl DefaultValue="https://oukawen.github.io/CRM-OUTLOOK-ADDIN-POUR-MYNE"/>
   <AppDomains>
-    <AppDomain>https://YOUR-GITHUB-PAGES-URL</AppDomain>
+    <AppDomain>https://oukawen.github.io/CRM-OUTLOOK-ADDIN-POUR-MYNE</AppDomain>
   </AppDomains>
 
   <Hosts>
@@ -31,7 +31,7 @@
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://YOUR-GITHUB-PAGES-URL/src/taskpane.html"/>
+        <SourceLocation DefaultValue="https://oukawen.github.io/CRM-OUTLOOK-ADDIN-POUR-MYNE/src/taskpane.html"/>
         <RequestedHeight>550</RequestedHeight>
       </DesktopSettings>
     </Form>
@@ -84,13 +84,13 @@
 
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://YOUR-GITHUB-PAGES-URL/assets/icon-16.png"/>
-        <bt:Image id="Icon.32x32" DefaultValue="https://YOUR-GITHUB-PAGES-URL/assets/icon-32.png"/>
-        <bt:Image id="Icon.80x80" DefaultValue="https://YOUR-GITHUB-PAGES-URL/assets/icon-80.png"/>
+        <bt:Image id="Icon.16x16" DefaultValue="https://oukawen.github.io/CRM-OUTLOOK-ADDIN-POUR-MYNE/assets/icon-16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://oukawen.github.io/CRM-OUTLOOK-ADDIN-POUR-MYNE/assets/icon-32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://oukawen.github.io/CRM-OUTLOOK-ADDIN-POUR-MYNE/assets/icon-80.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Commands.Url" DefaultValue="https://YOUR-GITHUB-PAGES-URL/src/commands.html"/>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://YOUR-GITHUB-PAGES-URL/src/taskpane.html"/>
+        <bt:Url id="Commands.Url" DefaultValue="https://oukawen.github.io/CRM-OUTLOOK-ADDIN-POUR-MYNE/src/commands.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://oukawen.github.io/CRM-OUTLOOK-ADDIN-POUR-MYNE/src/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="CRM Myne"/>
